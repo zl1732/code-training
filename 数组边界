@@ -1,0 +1,42 @@
+✅ 一、边界问题的典型情形
+📌 场景1：二维数组上下左右访问时越界
+
+比如在一个 n x m 的二维数组中访问 (i, j) 的左、右、上、下：
+
+matrix[i][j-1]  # 左边 → j > 0 时才合法
+matrix[i][j+1]  # 右边 → j < m-1 时才合法
+matrix[i-1][j]  # 上边 → i > 0 时才合法
+matrix[i+1][j]  # 下边 → i < n-1 时才合法
+
+🛠 通用写法：
+
+if 0 <= i < n and 0 <= j < m:
+    # 安全访问 matrix[i][j]
+
+
+
+📌 场景2：一维 DP 中左右访问，如 dp[j-1], dp[j+1]
+
+常见于：
+
+dp[j] = min(dp[j], dp[j-1] + something)  # 你得保证 j-1 ≥ 0
+
+💡技巧：处理前加条件判断：
+
+if j > 0:
+    left = dp[j-1]
+if j < w-1:
+    right = dp[j+1]
+
+
+def minFallingPathSum(matrix: List[List[int]]) -> int:
+    n = len(matrix)
+    for i in range(1, n):
+        for j in range(n):
+            min_above = matrix[i-1][j]
+            if j > 0:
+                min_above = min(min_above, matrix[i-1][j-1])
+            if j < n - 1:
+                min_above = min(min_above, matrix[i-1][j+1])
+            matrix[i][j] += min_above
+    return min(matrix[-1])

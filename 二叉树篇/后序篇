@@ -1,0 +1,39 @@
+一旦你发现题目和子树有关，那大概率要给函数设置合理的定义和返回值，在后序位置写代码了。
+✅ 你要“组合左右子问题的答案”，就必须 先递归下去拿到答案，再回来处理！
+后序遍历顺序是：左 → 右 → 根
+
+
+
+
+652. 寻找重复的子树 | 力扣 | LeetCode |  🟠
+
+
+def count(root):
+    if root == None:
+        return 0
+    # 先算出左右子树有多少节点
+    left = count(root.left)
+    right = count(root.right)
+    # 后序位置，子树加上自己，就是整棵二叉树的节点数
+    res = left + right + 1
+    return res
+
+
+# 定义：输入以 root 为根的二叉树，返回这棵树的序列化字符串
+def serialize(root):
+    # 对于空节点，可以用一个特殊字符表示
+    if root is None:
+        return "#"
+    # 将左右子树序列化成字符串
+    left = serialize(root.left)
+    right = serialize(root.right)
+    # 后序遍历代码位置
+    # 左右子树加上自己，就是以自己为根的二叉树序列化结果
+    myself = f"{left},{right},{root.val}"
+    return myself
+
+
+注意我们 myself 是按照左子树、右子树、根节点这样的顺序拼接字符串，也就是后序遍历顺序。
+因为我们这里的目的是通过序列化唯一描述一棵二叉树的结构，所以你也可以用前序顺序来拼接字符串，
+但是注意不能用中序顺序，具体原因参见后文 序列化和反序列化二叉树 的总结。
+
