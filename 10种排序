@@ -427,3 +427,212 @@ def sort(nums: List[int], lo: int, hi: int) -> None:
     # 此时两部分子数组已经被排好序
     # 合并两个有序数组，使 nums[lo..hi] 有序
     merge(nums, lo, mid, hi)
+
+def merge(nums: List[int], lo: int, mid: int, hi: int) -> None:
+    # 创建临时数组
+    temp = []
+    i, j = lo, mid + 1
+
+    # 合并两个有序子数组
+    while i <= mid and j <= hi:
+        if nums[i] <= nums[j]:
+            temp.append(nums[i])
+            i += 1
+        else:
+            temp.append(nums[j])
+            j += 1
+
+    # 把剩下的元素补上
+    while i <= mid:
+        temp.append(nums[i])
+        i += 1
+    while j <= hi:
+        temp.append(nums[j])
+        j += 1
+
+    # 回写到原数组
+    nums[lo:hi + 1] = temp
+
+
+# 测试
+nums = [5, 2, 3, 1, 4]
+sort(nums, 0, len(nums) - 1)
+print(nums)  # [1, 2, 3, 4, 5]
+
+
+ 
+#### 7 二叉堆结构的运用：堆排序 ####
+堆排序（以升序排序为例，用大顶堆）
+建堆
+    目标：把无序数组变成一个大顶堆（最大值在堆顶）。
+    方法有两种：
+        swim 上浮建堆：从头到尾扫描数组，每插入一个新元素，就向上“冒泡”调整位置，保持堆序。复杂度 O(n log n)。
+        sink 下沉建堆（推荐）：从最后一个非叶子节点开始，逐个向下调整。复杂度 O(n)。
+排序
+    现在堆顶是整个数组最大值，把它和最后一个元素交换。
+    把堆的有效范围缩小一格（相当于“去掉最后一个元素”，它已经是最大值，放在正确位置了）。
+    对新的堆顶进行 sink 下沉，让堆重新满足大顶堆性质。
+    重复上面步骤，直到堆只剩一个元素。
+
+建堆 → 不断交换堆顶与末尾 → 缩小堆范围 → 下沉堆顶 → 直到排完
+def min_heap_swim(heap, node):
+    # 小顶堆的上浮操作，时间复杂度是树高 O(logN)
+    while node > 0 and heap[parent(node)] > heap[node]:
+        swap(heap, parent(node), node)
+        node = parent(node)
+
+
+def min_heap_sink(heap, node, size):
+    # 小顶堆的下沉操作，时间复杂度是树高 O(logN)
+    while left(node) < size or right(node) < size:
+        # 比较自己和左右子节点，看看谁最小
+        min_index = node
+        if left(node) < size and heap[left(node)] < heap[min_index]:
+            min_index = left(node)
+        if right(node) < size and heap[right(node)] < heap[min_index]:
+            min_index = right(node)
+        if min_index == node:
+            break
+        # 如果左右子节点中有比自己小的，就交换
+        swap(heap, node, min_index)
+        node = min_index
+
+
+def max_heap_swim(heap, node):
+    # 大顶堆的上浮操作
+    while node > 0 and heap[parent(node)] < heap[node]:
+        swap(heap, parent(node), node)
+        node = parent(node)
+
+
+def max_heap_sink(heap, node, size):
+    # 大顶堆的下沉操作
+    while left(node) < size or right(node) < size:
+        # 小顶堆和大顶堆的唯一区别就在这里，比较逻辑相反
+        # 比较自己和左右子节点，看看谁最大
+        max_index = node
+        if left(node) < size and heap[left(node)] > heap[max_index]:
+            max_index = left(node)
+        if right(node) < size and heap[right(node)] > heap[max_index]:
+            max_index = right(node)
+        if max_index == node:
+            break
+        swap(heap, node, max_index)
+        node = max_index
+
+
+def parent(node):
+    # 父节点的索引
+    return (node - 1) // 2
+
+
+def left(node):
+    # 左子节点的索引
+    return node * 2 + 1
+
+
+def right(node):
+    # 右子节点的索引
+    return node * 2 + 2
+
+
+def swap(heap, i, j):
+    # 交换数组中两个元素的位置
+    heap[i], heap[j] = heap[j], heap[i]
+
+
+def sort(nums):
+    # 第一步，原地建堆，注意这里创建的是大顶堆
+    # 只要从左往右对每个元素调用 swim 方法，就可以原地建堆
+    for i in range(len(nums)):
+        max_heap_swim(nums, i)
+
+    # 第二步，排序
+    # 现在整个数组已经是一个大顶了，直接模拟删除堆顶元素的过程即可
+    heap_size = len(nums)
+    while heap_size > 0:
+        # 从堆顶删除元素，放到堆的后面
+        swap(nums, 0, heap_size - 1)
+        heap_size -= 1
+        # 恢复堆的性质
+        max_heap_sink(nums, 0, heap_size)
+        # 现在 nums[0..heap_size) 是一个大顶堆，nums[heap_size..) 是有序元素
+
+"""优化
+每个点由上至下swim
+变成
+每个非叶子节点 由下至上 sink
+因为
+sink好的左右子堆，只要把父节点sink，就可以保证整个都是堆
+
+
+前序 → swim：先根后子
+插入时你是从根到叶“开路径”，每个新点一边走一边调整。
+
+后序 → sink：先子后根
+建堆时你先保证每棵子树是堆，再调整它们的根节点。
+
+换句话说：
+swim 是 自顶向下修正路径，sink 是 自底向上构建结构。
+
+4. 什么时候用哪种？
+数据是流式到来的 → swim（优先级队列）
+数据一次性给全 → sink（堆排序、heapify）  sink 是 O(n) 数学推导的不用管
+"""
+
+def sort(nums):
+    # 第一步，原地建堆，注意这里创建的是大顶堆
+    # 从最后一个非叶子节点开始，依次下沉，合并二叉堆
+    n = len(nums)
+    for i in range(n // 2 - 1, -1, -1):
+        max_heap_sink(nums, i, n)
+
+    # 合并完成，现在整个数组已经是一个大顶堆
+
+    # 第二步，排序，和刚才的代码一样
+    heap_size = n
+    while heap_size > 0:
+        # 从堆顶删除元素，放到堆的后面
+        swap(nums, 0, heap_size - 1)
+        heap_size -= 1
+        # 恢复堆的性质
+        max_heap_sink(nums, 0, heap_size)
+        # 现在 nums[0..heap_size) 是一个大顶堆，nums[heap_size..) 是有序元素
+"""
+# 直接利用优先级队列对数组从小到大排序
+def sort(nums):
+    # 创建一个从小到大排序元素的小顶堆
+    pq = SimpleMinPQ(len(nums))
+    
+    # 先把所有元素插入到优先级队列中
+    for num in nums:
+        # push 操作会自动构建二叉堆，时间复杂度为 O(logN)
+        pq.push(num)
+    
+    # 再把所有元素取出来，就是从小到大排序的结果
+    for i in range(len(nums)):
+        # pop 操作从堆顶弹出二叉堆堆中最小的元素，时间复杂度为 O(logN)
+        nums[i] = pq.pop() 
+
+注意：
+    push和pop已经包含上浮交换等操作
+    # 增，向堆中插入一个元素，时间复杂度 O(logN)
+    def push(self, x):
+        # 把新元素追加到最后
+        self.heap[self.size] = x
+        # 然后上浮到正确位置
+        self.swim(self.size)
+        self.size += 1
+
+    # 删，删除堆顶元素，时间复杂度 O(logN)
+    def pop(self):
+        res = self.heap[0]
+        # 把堆底元素放到堆顶
+        self.heap[0] = self.heap[self.size - 1]
+        self.size -= 1
+        # 然后下沉到正确位置
+        self.sink(0)
+        return res       
+"""
+
+先保证子树是堆，再 sink 根节点 → 整棵树堆序成立。
