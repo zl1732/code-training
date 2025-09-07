@@ -78,6 +78,15 @@ def sort(nums):
                 break
         sorted_index += 1
 
+
+"""
+移动式（教材里的）：
+先保存当前元素到 key；
+把比它大的元素全部往后挪；
+最后一次性插入 key。
+好处：少了很多交换，赋值次数更少，效率略高。
+"""
+
 def sort(nums):
     n = len(nums)
     sorted_index = 0
@@ -91,19 +100,13 @@ def sort(nums):
                 break
         nums[i + 1] = cur
 
-"""
-移动式（教材里的）：
-先保存当前元素到 key；
-把比它大的元素全部往后挪；
-最后一次性插入 key。
-好处：少了很多交换，赋值次数更少，效率略高。
-"""
+
 def insertion_sort(nums):
     n = len(nums)
     for sorted_index in range(1, n):
-        cur = nums[i]
+        cur = nums[sorted_index]
         i = sorted_index - 1
-        while i >= 0 and nums[i] > key:
+        while i >= 0 and nums[i] > cur:
             nums[i + 1] = nums[i]  # 后移
             i -= 1
         nums[i + 1] = cur
@@ -133,14 +136,23 @@ def sort(nums):
             sorted_index += 1
         h //= 2
 
+def sort(nums):
+    n = len(nums)
+    h = n//2
+    while h>0:
+        sorted_index = h
+        while sorted_index < n:
+            for i in range(sorted_index, h-1, -h):
+                if nums[i] < nums[i - h]:
+                    nums[i], nums[i-h] = nums[i-h],nums[i]
+                else:
+                    break
+            sorted_index += 1
+        h //= 2
 
 
-✅ 写法一（先等于自己，里面挪动）
-i = sorted_index
-while i >= h and nums[i - h] > cur:
-    nums[i] = nums[i - h]
-    i -= h
-nums[i] = cur
+
+
 
 # 移动式
 def shell_sort(nums):
@@ -156,7 +168,22 @@ def shell_sort(nums):
             nums[i+h]=cur
         h //= 2
 
-#+++
+
+def shell_sort(nums):
+    n = len(nums)
+    h = n // 2  # 初始步长
+    while h>0:
+        for sorted_index in range(h, n):
+            cur = nums[sorted_index]
+            i = sorted_index
+            while i >= h and nums[i - h] > cur:
+                nums[i] = nums[i - h]
+                i -= h
+            nums[i] = cur
+        h //= 2
+    
+
+
 
 # 快排 前序
 def sort(nums: List[int], lo: int, hi: int):
@@ -166,18 +193,13 @@ def sort(nums: List[int], lo: int, hi: int):
     sort(nums, lo, p - 1)
     sort(nums, p + 1, hi)
 
+def sort(nums, lo, hi):
+    if lo>=hi:
+        return
+    
+
 #Lomuto1
-def partition(nums: List[int], lo: int, hi: int) -> int:
-    pivot = nums[hi]
-    i = lo  # i 指向 pivot 的位置。
-    for j in range(lo, hi):
-        if nums[j] <= pivot:
-            nums[i], nums[j] = nums[j], nums[i]
-            i += 1
-    nums[i], nums[hi] = nums[hi], nums[i]
-    return i
-#Lomuto2
-def partition(nums: List[int], lo: int, hi: int) -> int:
+def partition(nums, lo, hi):
     pivot = nums[hi]
     i = lo-1  # i 指向最后一个 <= pivot 元素的下标。
     for j in range(lo, hi):
@@ -187,21 +209,36 @@ def partition(nums: List[int], lo: int, hi: int) -> int:
     nums[i+1], nums[hi] = nums[hi], nums[i+1]
     return i+1
 
-#Hoare ？？？
-def partition(nums: List[int], lo: int, hi: int) -> int:
-    pivot = nums[lo]
-    i, j = lo + 1, hi
 
-    while i <= j:
-        while i < hi and nums[i] <= pivot:
+#Lomuto2
+def partition(nums, lo, hi):
+    pivot = nums[hi]
+    i = lo  # i 指向 pivot 的位置。
+    for j in range(lo, hi):
+        if nums[j] <= pivot:
+            nums[i], nums[j] = nums[j], nums[i]
             i += 1
-        while j > lo and nums[j] > pivot:
-            j -= 1
-        if i >= j:
-            break
-        nums[i], nums[j] = nums[j], nums[i]
-    nums[lo], nums[j] = nums[j], nums[lo]
-    return j
+    nums[i], nums[hi] = nums[hi], nums[i]
+    return i
+
+
+
+
+# #Hoare ？？？
+# def partition(nums: List[int], lo: int, hi: int) -> int:
+#     pivot = nums[lo]
+#     i, j = lo + 1, hi
+
+#     while i <= j:
+#         while i < hi and nums[i] <= pivot:
+#             i += 1
+#         while j > lo and nums[j] > pivot:
+#             j -= 1
+#         if i >= j:
+#             break
+#         nums[i], nums[j] = nums[j], nums[i]
+#     nums[lo], nums[j] = nums[j], nums[lo]
+#     return j
 
 
 
