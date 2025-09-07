@@ -193,10 +193,6 @@ def sort(nums: List[int], lo: int, hi: int):
     sort(nums, lo, p - 1)
     sort(nums, p + 1, hi)
 
-def sort(nums, lo, hi):
-    if lo>=hi:
-        return
-    
 
 #Lomuto1
 def partition(nums, lo, hi):
@@ -251,6 +247,7 @@ def merge_sort(arr):
     right = merge_sort(arr[mid:])
     return merge(left, right)
 
+
 def merge(left, right):
     merged = []
     i = j = 0
@@ -267,28 +264,64 @@ def merge(left, right):
 
 
 
+
 # 堆排序
+"""
+方法	方向	                应用场景	    是否构建整棵堆	         是否递归
+swim	自底向上（Bottom-Up）	插入元素时用	❌ 否，只处理一个元素	❌ 通常迭代
+sink	自顶向下（Top-Down）	删除堆顶/建堆	✅ 是	               ✅ 可递归/迭代
+"""
+# heapify 就是sink操作, 迭代写法
 def heapify(nums, n, i):
     largest = i          # 先假设根节点最大
-    left = 2 * i + 1     # 左子节点
-    right = 2 * i + 2    # 右子节点
-    # 如果左子节点更大
-    if left < n and nums[left] > nums[largest]:
-        largest = left
-    # 如果右子节点更大
-    if right < n and nums[right] > nums[largest]:
-        largest = right
-    # 如果最大值不是根节点，交换并递归调整
+    l = 2 * i + 1
+    r = 2 * i + 2
+
+    if l < n and nums[l] > nums[largest]:
+        largest = l
+    if r < n and nums[r] > nums[largest]:
+        largest = r
     if largest != i:
         nums[i], nums[largest] = nums[largest], nums[i]
         heapify(nums, n, largest)
 
-def heap_sort(nums):
-    n = len(nums)
+# 递归写法
+def max_heap_sink(nums, i, size):
+    while True:
+        largest = i
+        l = 2 * i + 1
+        r = 2 * i + 2
+        
+        if l < size and nums[l] > nums[largest]:
+            largest = l
+        if r < size and nums[r] > nums[largest]:
+            largest = r
 
+        if largest == i:
+            break
+
+        nums[i], nums[largest] = nums[j], nums[largest]
+        i = largest
+
+# swim操作
+def max_heap_swim(nums, i):
+    while i > 0 and nums[i] > nums[parent(i)]:
+        parent = (i - 1) // 2
+        nums[i], nums[parent] = nums[j], nums[parent]
+        i = parent 
+
+# 堆排序   
+def sort(nums):
+    n = len(nums)
+    # 1.onlogn
+    for i in range(len(nums)):
+        max_heap_swim(nums, i)
+    # 2.on
     for i in range(n // 2 - 1, -1, -1):
-        heapify(nums, n, i)
+        max_heap_sink(nums, i, n)
 
     for i in range(n - 1, 0, -1):
         nums[0], nums[i] = nums[i], nums[0]  # 交换堆顶和末尾
         heapify(nums, i, 0)  # 调整剩余堆
+
+

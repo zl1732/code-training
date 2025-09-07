@@ -5,8 +5,9 @@ git config --global --unset https.proxy
 # git add . && git commit -m "add file"
 # git push origin main
 
-git pull --rebase
+
 git add . && git commit -m "add file"
+git pull --rebase
 git push origin main
 
 # 第一个问题：merge vs rebase
