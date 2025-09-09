@@ -1,14 +1,19 @@
 git config --global --unset http.proxy
 git config --global --unset https.proxy
+git add . && git commit -m "add file"
+git pull --rebase
+git push origin main
+
+
 # git fetch origin
+# git reset --hard origin/main # 强制使用远程文件
 # git merge origin/main --allow-unrelated-histories
 # git add . && git commit -m "add file"
 # git push origin main
 
 
-git add . && git commit -m "add file"
-git pull --rebase
-git push origin main
+
+
 
 # 第一个问题：merge vs rebase
 # git fetch origin

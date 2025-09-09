@@ -1,3 +1,24 @@
+"""
+| 算法         | 时间复杂度           | 空间     | 稳定性   | 备注           |
+| ----------- | ------------------ | ---------| ------- | ------------ |
+| 冒泡 Bubble  | O(n²)              | O(1)     | ✅ 稳定  | 小学算法，了解即可    |
+| 选择 Select  | O(n²)              | O(1)     | ❌ 不稳定 | 永远选择最小，容易跳位置 |
+| 插入 Insert  | O(n²) / O(n)       | O(1)     | ✅ 稳定  | 局部有序/几乎有序时很快 |
+| 希尔 Shell   | O(n^1.3 \~ n^1.6)  | O(1)     | ❌ 不稳定 | 插入排序的优化      |
+| 快速 Quick   | O(n log n) / O(n²) | O(log n) | ❌ 不稳定 | 面试必会，快且原地    |
+| 归并 Merge   | O(n log n)         | O(n)     | ✅ 稳定   | 面试必会，稳定但用空间  |
+| 堆排 Heap    | O(n log n)         | O(1)     | ❌ 不稳定 | 建堆 + 每次取最大   |
+| 桶排序 Bucket | O(n + k)\~O(n²)   | O(n + k) | ✅       | 适合均匀小数，非通用   |
+| 基数排序 Radix | O(nk)             | O(n + k) | ✅      | 整数排序、定长字符串专用 |
+
+
+| 会写代码 + 会讲原理         |
+| ------------------- |
+| ✅ 快排（重点）            |
+| ✅ 归并（和快排互补）         |
+| ✅ 堆排序（和 heap 结构一起学） |
+| ✅ 插入排序（考细节/优化）      |
+"""
 # 选择排序
 def sort(nums: List[int]) -> None:
     n = len(nums)
@@ -319,9 +340,141 @@ def sort(nums):
     # 2.on
     for i in range(n // 2 - 1, -1, -1):
         max_heap_sink(nums, i, n)
-
+    # O(log n + log(n-1) + log(n-2) + ... + log 2 + log 1) = O(log(n!)) ≈ O(n log n)
     for i in range(n - 1, 0, -1):
         nums[0], nums[i] = nums[i], nums[0]  # 交换堆顶和末尾
         heapify(nums, i, 0)  # 调整剩余堆
 
 
+
+## 计数排序
+def counting_sort_with_negatives(nums):
+    if not nums:
+        return nums
+
+    min_val = min(nums)
+    max_val = max(nums)
+
+    # 偏移量：将所有值映射为非负整数
+    offset = -min_val
+    count_size = max_val - min_val + 1
+
+    # 1. 创建并填充计数数组
+    count = [0] * count_size
+    for num in nums:
+        count[num + offset] += 1
+
+    # 2. 构建前缀和，表示 <= i 的元素有多少个
+    for i in range(1, count_size):
+        count[i] += count[i - 1]
+
+    # 3. 构建输出数组（倒序保证稳定）
+    output = [0] * len(nums)
+    for num in reversed(nums):
+    #for i in range(len(nums) - 1, -1, -1):
+        idx = num + offset
+        output[count[idx]] = num
+        count[idx] -= 1
+    return output
+
+
+def counting_sort_numeric(nums):
+    if not nums:
+        return nums
+    mn, mx = min(nums), max(nums)
+    off = -mn
+    count = [0] * (mx - mn + 1)
+
+    for x in nums:
+        count[x + off] += 1
+
+    # 前缀和
+    for i in range(1, len(count)):
+        count[i] += count[i - 1]
+
+    out = [0] * len(nums)
+    for x in reversed(nums):
+        idx = x + off
+        count[idx] -= 1
+        out[count[idx]] = x
+    return out
+
+
+
+## 桶排序 插排
+def insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and arr[j] > key:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+
+
+def bucket_sort(nums, bucket_count=10):
+    if not nums:
+        return []
+    min_val = min(nums)
+    max_val = max(nums)
+    ε = 1e-9  # 避免除以 0
+    
+    buckets = [[] for _ in range(bucket_count)]
+    for num in nums:
+        index = int((num - min_val) / (max_val - min_val + ε) * bucket_count) # 归一化
+        index = min(index, bucket_count - 1)  # 防止越界
+        buckets[index].append(num)
+
+    for bucket in buckets:
+        insertion_sort(bucket)
+
+    # 4️⃣ 拼接阶段：按桶编号顺序合并所有桶
+    sorted_nums = []
+    for bucket in buckets:
+        sorted_nums.extend(bucket)
+
+    return sorted_nums
+
+
+
+
+# 桶排序 递归
+def is_sorted(arr):
+    """判断一个数组是否已经升序"""
+    return all(arr[i] <= arr[i + 1] for i in range(len(arr) - 1))
+
+def bucket_sort(nums, bucket_count=10):
+    # base 1
+    if len(nums) <= 1:
+        return nums[:]
+    min_val = min(nums)
+    max_val = max(nums)
+    ε = 1e-9
+
+    # base 2
+    if abs(max_val - min_val) < ε:
+        return nums[:]
+    # base 3
+    if is_sorted(nums):
+        return nums[:]
+
+    # 初始化桶
+    buckets = [[] for _ in range(bucket_count)]
+
+    # 分发元素
+    for num in nums:
+        index = int((num - min_val) / (max_val - min_val + ε) * bucket_count)
+        index = min(index, bucket_count - 1)
+        buckets[index].append(num)
+
+    # 递归对每个桶排序
+    sorted_nums = []
+    for bucket in buckets:
+        if len(bucket) <= 1:
+            sorted_nums.extend(bucket)
+        else:
+            # 递归调用自己
+            sorted_bucket = bucket_sort(bucket, bucket_count)
+            sorted_nums.extend(sorted_bucket)
+
+    return sorted_nums
