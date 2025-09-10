@@ -351,24 +351,19 @@ def sort(nums):
 def counting_sort_with_negatives(nums):
     if not nums:
         return nums
-
     min_val = min(nums)
     max_val = max(nums)
-
     # 偏移量：将所有值映射为非负整数
     offset = -min_val
     count_size = max_val - min_val + 1
-
-    # 1. 创建并填充计数数组
+    # 1. 创建并填充计数数组，每个数的count
     count = [0] * count_size
     for num in nums:
         count[num + offset] += 1
-
     # 2. 构建前缀和，表示 <= i 的元素有多少个
     for i in range(1, count_size):
         count[i] += count[i - 1]
-
-    # 3. 构建输出数组（倒序保证稳定）
+    # 3. 构建输出数组（倒序保证稳定）,最后出来的数输出到最后
     output = [0] * len(nums)
     for num in reversed(nums):
     #for i in range(len(nums) - 1, -1, -1):
@@ -376,6 +371,9 @@ def counting_sort_with_negatives(nums):
         output[count[idx]] = num
         count[idx] -= 1
     return output
+
+
+
 
 
 def counting_sort_numeric(nums):
@@ -401,6 +399,7 @@ def counting_sort_numeric(nums):
 
 
 
+
 ## 桶排序 插排
 def insertion_sort(arr):
     for i in range(1, len(arr)):
@@ -412,29 +411,26 @@ def insertion_sort(arr):
         arr[j + 1] = key
 
 
+
 def bucket_sort(nums, bucket_count=10):
     if not nums:
         return []
     min_val = min(nums)
     max_val = max(nums)
-    ε = 1e-9  # 避免除以 0
-    
+    offset = -min_val
+
+    bucket_size = (max_val - min_val) // bucket_count + 1
+
     buckets = [[] for _ in range(bucket_count)]
     for num in nums:
-        index = int((num - min_val) / (max_val - min_val + ε) * bucket_count) # 归一化
-        index = min(index, bucket_count - 1)  # 防止越界
+        index = (num + offset) // bucket_size
         buckets[index].append(num)
 
-    for bucket in buckets:
-        insertion_sort(bucket)
-
-    # 4️⃣ 拼接阶段：按桶编号顺序合并所有桶
     sorted_nums = []
     for bucket in buckets:
-        sorted_nums.extend(bucket)
-
+        sorted_bucket=insertion_sort(bucket)
+        sorted_nums.extend(sorted_bucket)
     return sorted_nums
-
 
 
 
@@ -444,16 +440,94 @@ def is_sorted(arr):
     return all(arr[i] <= arr[i + 1] for i in range(len(arr) - 1))
 
 def bucket_sort(nums, bucket_count=10):
+    # 2. 找到最大值和最小值
+    n = len(nums)
+    min_val = min(nums)
+    max_val = max(nums)
+
+    # 3. 偏移量，避免负数
+    offset = -min_val
+    # base 1
+    if len(nums) <= 1:
+        return nums[:]
+    # base 1
+    if is_sorted(nums):
+        return nums[:]
+    
+    # 4. 计算每个桶的区间大小
+    bucket_size = (max_val - min_val) // bucket_count + 1
+
+    # 5. 初始化桶
+    buckets = [[] for _ in range(bucket_count)]
+
+    # 6. 将元素分配到桶中
+    for num in nums:
+        index = (num + offset) // bucket_size
+        buckets[index].append(num)
+
+    # 7. 对每个桶递归排序
+    for i in range(bucket_count):
+        if len(buckets[i]) > 1:  # 避免不必要的递归
+            bucket_sort(buckets[i], bucket_count)
+
+    # 8. 合并所有桶回 nums
+    idx = 0
+    for bucket in buckets:
+        for num in bucket:
+            nums[idx] = num
+            idx += 1
+
+
+
+def bucket_sort_inplace(nums: List[int], bucket_count: int = 10) -> None:
+    """
+    原地递归桶排序
+    :param nums: 待排序列表（in-place 修改）
+    :param bucket_count: 桶的数量
+    """
+
+    n = len(nums)
+    # -------- Base Cases --------
+    if n <= 1:
+        return
+
+    min_val = min(nums)
+    max_val = max(nums)
+
+    # 如果本来就有序
+    if is_sorted(nums):
+        return
+
+    # -------- 初始化桶 --------
+    buckets = [[] for _ in range(bucket_count)]
+
+    # -------- 分发元素 --------
+    for num in nums:
+        index = int((num - min_val) / (max_val - min_val + 1e-9) * bucket_count)
+        index = min(index, bucket_count - 1)  # 避免越界
+        buckets[index].append(num)
+
+    # -------- 递归排序每个桶 --------
+    for i in range(bucket_count):
+        if len(buckets[i]) > 1:
+            bucket_sort_inplace(buckets[i], bucket_count)
+
+    # -------- 合并回 nums（原地覆盖）--------
+    idx = 0
+    for bucket in buckets:
+        for num in bucket:
+            nums[idx] = num
+            idx += 1
+
+
+
+def bucket_sort(nums, bucket_count=10):
     # base 1
     if len(nums) <= 1:
         return nums[:]
     min_val = min(nums)
     max_val = max(nums)
-    ε = 1e-9
 
-    # base 2
-    if abs(max_val - min_val) < ε:
-        return nums[:]
     # base 3
     if is_sorted(nums):
         return nums[:]
@@ -463,7 +537,7 @@ def bucket_sort(nums, bucket_count=10):
 
     # 分发元素
     for num in nums:
-        index = int((num - min_val) / (max_val - min_val + ε) * bucket_count)
+        index = int((num - min_val) / (max_val - min_val + 1e-9) * bucket_count)
         index = min(index, bucket_count - 1)
         buckets[index].append(num)
 
