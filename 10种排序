@@ -801,10 +801,7 @@ def bucket_sort(nums, bucket_count=10):
     return sorted_nums
 
 
-#
-
-
-
+#2 递归
 def is_sorted(arr):
     """判断一个数组是否已经升序"""
     return all(arr[i] <= arr[i + 1] for i in range(len(arr) - 1))

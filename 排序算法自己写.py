@@ -445,25 +445,26 @@ def bucket_sort(nums, bucket_count=10):
     min_val = min(nums)
     max_val = max(nums)
 
-    # 3. 偏移量，避免负数
     offset = -min_val
     # base 1
-    if len(nums) <= 1:
+    if n <= 1:
         return nums[:]
     # base 1
     if is_sorted(nums):
         return nums[:]
-    
-    # 4. 计算每个桶的区间大小
-    bucket_size = (max_val - min_val) // bucket_count + 1
 
-    # 5. 初始化桶
+    #  将元素分配到桶中
     buckets = [[] for _ in range(bucket_count)]
-
-    # 6. 将元素分配到桶中
+    bucket_size = (max_val - min_val) // bucket_count + 1 # 注意按域分桶不是按len
     for num in nums:
         index = (num + offset) // bucket_size
         buckets[index].append(num)
+
+    # for num in nums:
+    #     index = int((num - min_val) / (max_val - min_val + 1e-9) * (bucket_count-1))
+    #     index = min(index, bucket_count - 1)  # 避免越界
+    #     buckets[index].append(num)
+
 
     # 7. 对每个桶递归排序
     for i in range(bucket_count):
@@ -478,49 +479,6 @@ def bucket_sort(nums, bucket_count=10):
             idx += 1
 
 
-
-def bucket_sort_inplace(nums: List[int], bucket_count: int = 10) -> None:
-    """
-    原地递归桶排序
-    :param nums: 待排序列表（in-place 修改）
-    :param bucket_count: 桶的数量
-    """
-
-    n = len(nums)
-    # -------- Base Cases --------
-    if n <= 1:
-        return
-
-    min_val = min(nums)
-    max_val = max(nums)
-
-    # 如果本来就有序
-    if is_sorted(nums):
-        return
-
-    # -------- 初始化桶 --------
-    buckets = [[] for _ in range(bucket_count)]
-
-    # -------- 分发元素 --------
-    for num in nums:
-        index = int((num - min_val) / (max_val - min_val + 1e-9) * bucket_count)
-        index = min(index, bucket_count - 1)  # 避免越界
-        buckets[index].append(num)
-
-    # -------- 递归排序每个桶 --------
-    for i in range(bucket_count):
-        if len(buckets[i]) > 1:
-            bucket_sort_inplace(buckets[i], bucket_count)
-
-    # -------- 合并回 nums（原地覆盖）--------
-    idx = 0
-    for bucket in buckets:
-        for num in bucket:
-            nums[idx] = num
-            idx += 1
-
-
-
 def bucket_sort(nums, bucket_count=10):
     # base 1
     if len(nums) <= 1:
@@ -532,14 +490,17 @@ def bucket_sort(nums, bucket_count=10):
     if is_sorted(nums):
         return nums[:]
 
-    # 初始化桶
-    buckets = [[] for _ in range(bucket_count)]
-
     # 分发元素
+    buckets = [[] for _ in range(bucket_count)]
+    bucket_size = (max_val - min_val) // bucket_count + 1 # 注意按域分桶不是按len
     for num in nums:
-        index = int((num - min_val) / (max_val - min_val + 1e-9) * bucket_count)
-        index = min(index, bucket_count - 1)
+        index = (num + offset) // bucket_size
         buckets[index].append(num)
+
+    # for num in nums:
+    #     index = int((num - min_val) / (max_val - min_val + 1e-9) * bucket_count)
+    #     index = min(index, bucket_count - 1)
+    #     buckets[index].append(num)
 
     # 递归对每个桶排序
     sorted_nums = []
@@ -552,3 +513,12 @@ def bucket_sort(nums, bucket_count=10):
             sorted_nums.extend(sorted_bucket)
 
     return sorted_nums
+
+
+
+
+
+
+
+
+
