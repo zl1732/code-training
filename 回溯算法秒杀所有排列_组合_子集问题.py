@@ -175,14 +175,24 @@ nums = [1,2,3]
 
 """
 
+"""
+✅ 为什么要用 used 数组？
+    在全排列问题中每个元素只能使用一次；
+    同一层不能重复选择已经选过的元素。
+    !!!!! 只用一个used数组控制就够了，不需要start
+
+如果没有 used，回溯过程中无法判断一个元素是否已经在当前路径中，可能会出现重复选择的问题。
+例如 nums = [1,2,3]，如果不加限制，你可能得到 [1,1,2] 这样的错误结果。
+"""
+
 class Solution:
-    def __init__(self):
+    """
+    在这里声明比较好，避免下次调用时被污染
+    """
+    def permute(self, nums: List[int]):
         self.res = []
         self.track = []
         # track 中的元素会被标记为 true
-        self.used = []
-    
-    def permute(self, nums: List[int]):
         self.used = [False] * len(nums)
         self.backtrack(nums)
         return self.res
@@ -204,14 +214,9 @@ class Solution:
             self.backtrack(nums)
             self.track.pop()
             self.used[i] = False
-"""
-✅ 为什么要用 used 数组？
-    在全排列问题中每个元素只能使用一次；
-    同一层不能重复选择已经选过的元素。
 
-如果没有 used，回溯过程中无法判断一个元素是否已经在当前路径中，可能会出现重复选择的问题。
-例如 nums = [1,2,3]，如果不加限制，你可能得到 [1,1,2] 这样的错误结果。
-"""
+
+
 
 # 延伸
 # 元素个数为 k 的排列
@@ -234,11 +239,11 @@ nums = [1,2,2]，你应该输出：
             /    |    \
          1 /     |2    \ 2'
           /      |      \
-        [ ]     [2]      [2']
+        [1]     [2]      [2']
        /  \      |
      2/    \2'  [2,2']
      /      \
-   [1,2]   [1,2]
+   [1,2]   [1,2']
      |
   [1,2,2']
 
@@ -252,13 +257,13 @@ nums = [1,2,2]，你应该输出：
 
 [2] 和 [1,2] 这两个结果出现了重复，所以我们需要进行剪枝，如果一个节点有多条值相同的树枝相邻，则只遍历第一条，剩下的都剪掉
 
-                [ ]
-            /    |    \
-         1 /     |2    ❌ 2'
+                [ ]            start = 1
+            /    |   \
+         1 /     |2    ❌ 2'   i =  1 2 3
           /      |      \
-        [ ]     [2]      *[2']
+        [ ]     [2]      *[2'] start = 2
        /  \      |
-     2/    ❌2'  [2,2']
+     2/    ❌2'  [2,2']        i = 1, 2; 1
      /      \
    [1,2]   *[1,2]
      |
@@ -267,6 +272,9 @@ nums = [1,2,2]，你应该输出：
   [1,2,2']
 
 代码：先对序列进行排序，让相同的元素靠在一起，如果发现 nums[i] == nums[i-1]，则跳过：
+
+start -- 层数
+i     -- 数列中index
 """
 
 class Solution:
@@ -285,19 +293,19 @@ class Solution:
         self.res.append(self.track[:])
         
         for i in range(start, len(nums)):
-            print("start:",start+1, "i:",i+1)
             # 剪枝逻辑，值相同的相邻树枝，只遍历第一条
-            if i > start and nums[i] == nums[i - 1]:
+            if i > start and nums[i] == nums[i - 1]: # i>start [1,2,2‘] start在1，i在2’
                 continue
             self.track.append(nums[i])
             print(self.track)
             self.backtrack(nums, i + 1)
             self.track.pop()
 
+
 Solution().subsetsWithDup([1,2,2])
-
-
 """
+✅ 遍历路径演示
+print("start:",start+1, "i:",i+1)
 start: 1 i: 1
 [1]
 start: 2 i: 2
@@ -312,8 +320,9 @@ start: 3 i: 3
 [2, 4]
 start: 1 i: 3
 [4]
-start: 1 第1排， i:1 第1个数
-start: 3 第3排， i:3 第3个数
+start: 1 第1排， i:1 第1个数    start -- 层数
+start: 3 第3排， i:3 第3个数    i     -- 数列中index
+
 
 ✅ 为什么要这个条件？
 假设没有 i > start，只写 if nums[i] == nums[i-1]: continue：
@@ -375,6 +384,7 @@ class Solution:
             self.backtrack(nums, i + 1, target)
             self.track.pop()
             self.trackSum -= nums[i]
+
 
 
 # 第五种
@@ -441,6 +451,10 @@ class Solution:
             self.used[i] = False
 
 
+
+
+
+
 # 第六种
 # 子集/组合（元素无重可复选）
 """
@@ -492,6 +506,7 @@ class Solution:
             self.trackSum -= nums[i]
             self.track.pop()
 
+
 # 第七种
 # 排列（元素无重可复选）
 """
@@ -512,52 +527,59 @@ class Solution:
         self.backtrack(nums)
         return self.res
 
-    # 回溯算法核心函数
     def backtrack(self, nums: List[int]) -> None:
-        # base case，到达叶子节点
         if len(self.track) == len(nums):
-            # 收集叶子节点上的值
             self.res.append(self.track[:])
             return
 
         # 回溯算法标准框架
         for i in range(len(nums)):
-            # 做选择
             self.track.append(nums[i])
-            # 进入下一层回溯树
             self.backtrack(nums)
-            # 取消选择
             self.track.pop()
 
 
 
 ###### 总结：######
+
+# 组合: start控制起始点 + self.backtrack(nums, i + 1)
+# 排列: self.used
+        # for i in range(len(nums)):
+        #     self.backtrack(nums)
+# 有重复不可复选: if i > start and nums[i] == nums[i-1]
+# 需要提前终止：if ==: append+return; if >: return
+
+#（衍生）
+# 全排列: 遵循基本回溯框架
+        # for i in range(len(nums)):
+        #     self.backtrack(nums)
+# 可重组合: 下一层递归不用i+1
+        # for i in range(start, len(nums)):
+        #     self.backtrack(nums, i)
+# 可重排列: if i > 0 and nums[i] == nums[i - 1] and not self.used[i - 1]:
+
+
+
+
 """
 #形式一、元素无重不可复选，即 nums 中的元素都是唯一的，每个元素最多只能被使用一次
 """
 # 组合/子集问题回溯算法框架
 def backtrack(nums: List[int], start: int):
-    # 回溯算法标准框架
     for i in range(start, len(nums)):
-        # 做选择
         track.append(nums[i])
-        # 注意参数
         backtrack(nums, i + 1)
-        # 撤销选择
         track.pop()
 
 # 排列问题回溯算法框架
 def backtrack(nums: List[int]):
     for i in range(len(nums)):
-        # 剪枝逻辑
         if used[i]:
             continue
-        # 做选择
+
         used[i] = True
         track.append(nums[i])
-
         backtrack(nums)
-        # 撤销选择
         track.pop()
         used[i] = False
         
@@ -570,16 +592,12 @@ nums = None
 nums.sort()
 # 组合/子集问题回溯算法框架
 def backtrack(nums: List[int], start: int):
-    # 回溯算法标准框架
     for i in range(start, len(nums)):
         # 剪枝逻辑，跳过值相同的相邻树枝
         if i > start and nums[i] == nums[i - 1]:
             continue
-        # 做选择
         track.append(nums[i])
-        # 注意参数
         backtrack(nums, i + 1)
-        # 撤销选择
         track.pop()
 
 
@@ -587,18 +605,15 @@ nums.sort()
 # 排列问题回溯算法框架
 def backtrack(nums: List[int]):
     for i in range(len(nums)):
-        # 剪枝逻辑
         if used[i]:
             continue
         # 剪枝逻辑，固定相同的元素在排列中的相对位置
         if i > 0 and nums[i] == nums[i - 1] and not used[i - 1]:
             continue
-        # 做选择
+
         used[i] = True
         track.append(nums[i])
-
         backtrack(nums)
-        # 撤销选择
         track.pop()
         used[i] = False
 
@@ -608,21 +623,15 @@ def backtrack(nums: List[int]):
 """
 # 组合/子集问题回溯算法框架
 def backtrack(nums: List[int], start: int):
-    # 回溯算法标准框架
     for i in range(start, len(nums)):
-        # 做选择
         track.append(nums[i])
-        # 注意参数
         backtrack(nums, i)
-        # 撤销选择
         track.pop()
 
 
 # 排列问题回溯算法框架
 def backtrack(nums: List[int]):
     for i in range(len(nums)):
-        # 做选择
         track.append(nums[i])
         backtrack(nums)
-        # 撤销选择
         track.pop()
