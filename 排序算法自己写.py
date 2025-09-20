@@ -292,9 +292,9 @@ def merge(left, right):
 swim	自底向上（Bottom-Up）	插入元素时用	❌ 否，只处理一个元素	❌ 通常迭代
 sink	自顶向下（Top-Down）	删除堆顶/建堆	✅ 是	               ✅ 可递归/迭代
 """
-# heapify 就是sink操作, 迭代写法
+# heapify 就是sink操作, 递归写法
 def heapify(nums, n, i):
-    largest = i          # 先假设根节点最大
+    largest = i    # 先假设根节点最大
     l = 2 * i + 1
     r = 2 * i + 2
 
@@ -306,16 +306,16 @@ def heapify(nums, n, i):
         nums[i], nums[largest] = nums[largest], nums[i]
         heapify(nums, n, largest)
 
-# 递归写法
-def max_heap_sink(nums, i, size):
+# 迭代写法
+def max_heap_sink(nums, n, i):
     while True:
         largest = i
         l = 2 * i + 1
         r = 2 * i + 2
         
-        if l < size and nums[l] > nums[largest]:
+        if l < n and nums[l] > nums[largest]:
             largest = l
-        if r < size and nums[r] > nums[largest]:
+        if r < n and nums[r] > nums[largest]:
             largest = r
 
         if largest == i:
@@ -326,19 +326,23 @@ def max_heap_sink(nums, i, size):
 
 # swim操作
 def max_heap_swim(nums, i):
-    while i > 0 and nums[i] > nums[parent(i)]:
-        parent = (i - 1) // 2
-        nums[i], nums[parent] = nums[j], nums[parent]
-        i = parent 
+    while i > 0 and nums[i] > nums[(i - 1) // 2]:
+        nums[i], nums[parent] = nums[j], nums[(i - 1) // 2]
+        i = (i - 1) // 2  # parent
+    
 
 # 堆排序   
 def sort(nums):
     n = len(nums)
     # 1.onlogn
+    """
+    每次添加一个元素 i，前面的 [0..i-1] 已经是一个合法的堆。
+    所以 必须从前往后，才能保证插入元素之前，堆是有效的。
+    """
     for i in range(len(nums)):
         max_heap_swim(nums, i)
     # 2.on
-    for i in range(n // 2 - 1, -1, -1):
+    for i in range(n // 2 - 1, -1, -1): # n // 2 - 1 更常用
         max_heap_sink(nums, i, n)
     # O(log n + log(n-1) + log(n-2) + ... + log 2 + log 1) = O(log(n!)) ≈ O(n log n)
     for i in range(n - 1, 0, -1):
@@ -371,8 +375,6 @@ def counting_sort_with_negatives(nums):
         output[count[idx]] = num
         count[idx] -= 1
     return output
-
-
 
 
 
