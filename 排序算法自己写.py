@@ -17,8 +17,7 @@
 | ✅ 快排（重点）            |
 | ✅ 归并（和快排互补）         |
 | ✅ 堆排序（和 heap 结构一起学） |
-| ✅ 插入排序（考细节/优化）      |
-"""
+| ✅ 插入排序（考细节/优化）      |"""
 # 选择排序
 def sort(nums: List[int]) -> None:
     n = len(nums)
@@ -306,6 +305,8 @@ def heapify(nums, n, i):
         nums[i], nums[largest] = nums[largest], nums[i]
         heapify(nums, n, largest)
 
+
+
 # 迭代写法
 def max_heap_sink(nums, n, i):
     while True:
@@ -324,12 +325,21 @@ def max_heap_sink(nums, n, i):
         nums[i], nums[largest] = nums[j], nums[largest]
         i = largest
 
+
+
+
 # swim操作
 def max_heap_swim(nums, i):
     while i > 0 and nums[i] > nums[(i - 1) // 2]:
         nums[i], nums[parent] = nums[j], nums[(i - 1) // 2]
         i = (i - 1) // 2  # parent
     
+def swim(nums, i):
+    while i>0 and nums[i] > nums[parent(i)]:
+        swap(i, parent(i))
+        i == parent(i)
+
+
 
 # 堆排序   
 def sort(nums):
@@ -344,37 +354,36 @@ def sort(nums):
     # 2.on
     for i in range(n // 2 - 1, -1, -1): # n // 2 - 1 更常用
         max_heap_sink(nums, i, n)
-    # O(log n + log(n-1) + log(n-2) + ... + log 2 + log 1) = O(log(n!)) ≈ O(n log n)
+
     for i in range(n - 1, 0, -1):
         nums[0], nums[i] = nums[i], nums[0]  # 交换堆顶和末尾
         heapify(nums, i, 0)  # 调整剩余堆
 
 
 
-## 计数排序
-def counting_sort_with_negatives(nums):
-    if not nums:
-        return nums
+# 计数排序
+def sort(nums):
     min_val = min(nums)
     max_val = max(nums)
-    # 偏移量：将所有值映射为非负整数
+    
     offset = -min_val
-    count_size = max_val - min_val + 1
-    # 1. 创建并填充计数数组，每个数的count
-    count = [0] * count_size
+    count = [0] * (max_val - min_val + 1)
+    
     for num in nums:
         count[num + offset] += 1
-    # 2. 构建前缀和，表示 <= i 的元素有多少个
-    for i in range(1, count_size):
+    
+    for i in range(1, len(count)):
         count[i] += count[i - 1]
-    # 3. 构建输出数组（倒序保证稳定）,最后出来的数输出到最后
-    output = [0] * len(nums)
-    for num in reversed(nums):
-    #for i in range(len(nums) - 1, -1, -1):
-        idx = num + offset
-        output[count[idx]] = num
-        count[idx] -= 1
-    return output
+    
+    sorted_nums = [0] * len(nums)
+    for i in range(len(nums) - 1, -1, -1):
+        sorted_nums[count[nums[i] + offset] - 1] = nums[i]
+        count[nums[i] + offset] -= 1
+    
+    for i in range(len(nums)):
+        nums[i] = sorted_nums[i]
+
+
 
 
 
@@ -388,139 +397,13 @@ def counting_sort_numeric(nums):
     for x in nums:
         count[x + off] += 1
 
-    # 前缀和
     for i in range(1, len(count)):
         count[i] += count[i - 1]
 
     out = [0] * len(nums)
-    for x in reversed(nums):
+    for x in reversed(nums):           # 倒序保证稳定
         idx = x + off
         count[idx] -= 1
         out[count[idx]] = x
     return out
-
-
-
-
-## 桶排序 插排
-def insertion_sort(arr):
-    for i in range(1, len(arr)):
-        key = arr[i]
-        j = i - 1
-        while j >= 0 and arr[j] > key:
-            arr[j + 1] = arr[j]
-            j -= 1
-        arr[j + 1] = key
-
-
-
-def bucket_sort(nums, bucket_count=10):
-    if not nums:
-        return []
-    min_val = min(nums)
-    max_val = max(nums)
-    offset = -min_val
-
-    bucket_size = (max_val - min_val) // bucket_count + 1
-
-    buckets = [[] for _ in range(bucket_count)]
-    for num in nums:
-        index = (num + offset) // bucket_size
-        buckets[index].append(num)
-
-    sorted_nums = []
-    for bucket in buckets:
-        sorted_bucket=insertion_sort(bucket)
-        sorted_nums.extend(sorted_bucket)
-    return sorted_nums
-
-
-
-# 桶排序 递归
-def is_sorted(arr):
-    """判断一个数组是否已经升序"""
-    return all(arr[i] <= arr[i + 1] for i in range(len(arr) - 1))
-
-def bucket_sort(nums, bucket_count=10):
-    # 2. 找到最大值和最小值
-    n = len(nums)
-    min_val = min(nums)
-    max_val = max(nums)
-
-    offset = -min_val
-    # base 1
-    if n <= 1:
-        return nums[:]
-    # base 1
-    if is_sorted(nums):
-        return nums[:]
-
-    #  将元素分配到桶中
-    buckets = [[] for _ in range(bucket_count)]
-    bucket_size = (max_val - min_val) // bucket_count + 1 # 注意按域分桶不是按len
-    for num in nums:
-        index = (num + offset) // bucket_size
-        buckets[index].append(num)
-
-    # for num in nums:
-    #     index = int((num - min_val) / (max_val - min_val + 1e-9) * (bucket_count-1))
-    #     index = min(index, bucket_count - 1)  # 避免越界
-    #     buckets[index].append(num)
-
-
-    # 7. 对每个桶递归排序
-    for i in range(bucket_count):
-        if len(buckets[i]) > 1:  # 避免不必要的递归
-            bucket_sort(buckets[i], bucket_count)
-
-    # 8. 合并所有桶回 nums
-    idx = 0
-    for bucket in buckets:
-        for num in bucket:
-            nums[idx] = num
-            idx += 1
-
-
-def bucket_sort(nums, bucket_count=10):
-    # base 1
-    if len(nums) <= 1:
-        return nums[:]
-    min_val = min(nums)
-    max_val = max(nums)
-
-    # base 3
-    if is_sorted(nums):
-        return nums[:]
-
-    # 分发元素
-    buckets = [[] for _ in range(bucket_count)]
-    bucket_size = (max_val - min_val) // bucket_count + 1 # 注意按域分桶不是按len
-    for num in nums:
-        index = (num + offset) // bucket_size
-        buckets[index].append(num)
-
-    # for num in nums:
-    #     index = int((num - min_val) / (max_val - min_val + 1e-9) * bucket_count)
-    #     index = min(index, bucket_count - 1)
-    #     buckets[index].append(num)
-
-    # 递归对每个桶排序
-    sorted_nums = []
-    for bucket in buckets:
-        if len(bucket) <= 1:
-            sorted_nums.extend(bucket)
-        else:
-            # 递归调用自己
-            sorted_bucket = bucket_sort(bucket, bucket_count)
-            sorted_nums.extend(sorted_bucket)
-
-    return sorted_nums
-
-
-
-
-
-
-
-
 
