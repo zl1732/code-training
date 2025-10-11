@@ -1,0 +1,21 @@
+    """
+    📌 总结：
+    迭代法 时间复杂度 O(n)，空间 O(1)，最常用。
+    递归法 时间复杂度 O(n)，空间 O(n)（递归栈）。
+    """
+    def reverseList(head: ListNode) -> ListNode:
+        prev, curr = None, head
+        while curr:
+            nxt = curr.next   # 先保存下一个节点
+            curr.next = prev  # 翻转指针
+            prev = curr       # prev 前进
+            curr = nxt        # curr 前进
+        return prev
+    
+    # def reverseList(head: ListNode) -> ListNode:
+    #     if not head or not head.next:
+    #         return head
+    #     new_head = reverseList(head.next)
+    #     head.next.next = head
+    #     head.next = None
+    #     return new_head
