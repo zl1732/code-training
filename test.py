@@ -217,3 +217,146 @@ s = "abcde"
 words = ["bbb"]
 words = ["acd","ace"]
 numMatchingSubseq(s, words)
+
+print("*"*50)
+
+def lengthLongestPath(input: str) -> int:
+    st = []
+    max_len = 0
+    # line
+    paths = input.split('\n')
+    for path in paths:
+        level = path.rfind('\t') + 1
+        print(level, path)
+        while st and level < len(st):
+            st.pop()
+        """
+        append 要减去 level，否则后面多个path会多次加level
+        """
+        st.append(len(path)-level)
+        # 如果是文件，就计算路径长度
+        if "." in path:
+            l = sum(st) + len(st) - 1
+            # 加上父路径的分隔符
+            max_len = max(max_len, l)
+            print(max_len)
+    return max_len
+
+s = "dir\n\tsubdir1\n\t\tfile1.ext\n\t\tsubsubdir1\n\tsubdir2\n\t\tsubsubdir2\n\t\t\tfile2.ext"
+lengthLongestPath(s)
+
+
+
+print("*"*50)
+
+
+def next_greater_debug_visual(nums):
+    n = len(nums)
+    res = [-1] * n
+    st = []  # 存索引，保持递减（栈顶最小）
+
+    def draw_stack(stack):
+        """打印栈内容的可视化小图"""
+        if not stack:
+            print("  [栈为空]")
+            return
+        # 找最大高度用于缩放
+        maxh = max(nums[i] for i in stack)
+        print("  栈结构：")
+        for h in range(maxh, 0, -1):
+            line = ""
+            for i in stack:
+                line += "  █ " if nums[i] >= h else "    "
+            print(line)
+        print(" ", " ".join(f"{nums[i]:2d}" for i in stack))
+        print("  ↑↑ 栈底 → 栈顶 ↑↑")
+
+    print(f"\nnums = {nums}")
+    print("初始状态: res =", res)
+    print("=" * 60)
+
+    for i in range(n):
+        print(f"🔹 当前元素: i={i}, nums[i]={nums[i]}")
+        while st and nums[i] > nums[st[-1]]:
+            idx = st.pop()
+            res[idx] = nums[i]
+            print(f"  ⚙️ nums[{i}]={nums[i]} > nums[{idx}]={nums[idx]} → 弹出 idx={idx}, res[{idx}]={nums[i]}")
+            draw_stack(st)
+            print("-" * 40)
+        st.append(i)
+        print(f"  ➕ 入栈 i={i}, 当前栈索引={st}")
+        draw_stack(st)
+        print(f"  📊 当前 res = {res}")
+        print("=" * 60)
+
+    print(f"✅ 最终结果: {res}\n")
+    return res
+
+
+
+# # 1️⃣ 基本例子：常规混合序列
+# next_greater_debug([2, 1, 2, 4, 3])
+
+# # 2️⃣ 全递减序列：最坏情况（所有元素都入栈）
+# next_greater_debug([9, 8, 7, 6, 5])
+
+# # 3️⃣ 全递增序列：最顺畅情况（每次都立刻弹栈）
+# next_greater_debug([1, 2, 3, 4, 5])
+
+# # 4️⃣ 波浪序列：多次触发 while
+# next_greater_debug([2, 5, 1, 3, 4])
+
+# # 5️⃣ 极端情况：全相等
+# next_greater_debug([3, 3, 3, 3])
+
+
+# st = []
+# print(st[-1])
+
+
+
+class Solution:
+    def nextGreaterElement(self, nums1: List[int], nums2: List[int]) -> List[int]:
+        greater = self.nextGreaterElement_helper1(nums2)
+        greater_map = {}
+        for i, num in enumerate(nums2):
+            # 正序
+            greater_map[num] = greater[i]
+        res = [greater_map[i] for i in nums1]
+
+        # greater = self.nextGreaterElement_helper2(nums2)
+        # greater_map = {}
+        # for i, num in enumerate(nums2):
+        #     # 反序
+        #     greater_map[num] = greater[num]
+        # res = [greater_map[i] for i in nums1]
+        return res
+
+
+    def nextGreaterElement_helper1(self, nums):
+        # 正序
+        st = []
+        res = [-1] * len(nums)
+        for i, cur in enumerate(nums):
+            while st and cur > nums[st[-1]]:
+                idx = st.pop()
+                res[idx] = cur
+            st.append(i)
+        return res
+
+    def nextGreaterElement_helper2(self, nums):
+        # 反序
+        st = []
+        n = len(nums)
+        res = [-1] * n
+        for i in range(n-1, -1, -1):
+            cur = nums[i]
+            while st and cur >= st[-1]:
+                st.pop()
+            res[i] = -1 if not st else st[-1]
+            st.append(cur)
+        return res
+nums1 = [4,1,2]
+nums2 = [1,3,4,2]
+a=  Solution()
+a.nextGreaterElement(nums1, nums2)
