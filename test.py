@@ -360,3 +360,51 @@ nums1 = [4,1,2]
 nums2 = [1,3,4,2]
 a=  Solution()
 a.nextGreaterElement(nums1, nums2)
+
+
+print("*"*50)
+
+times =  [2,6,4,8,10,9,15]
+res = 0
+max_time = 0
+n = len(times)
+for i in range(n - 1, -1, -1):
+    print()
+    print(times)
+    print("num:", times[i])
+    print('_'*20)
+    if times[i] > max_time:
+        max_time = times[i]
+        res += 1
+    print(max_time)
+
+
+
+
+from collections import deque
+def maxSubArray(nums):
+    n = len(nums)
+    preSum = [0] * (n + 1)
+    for i in range(1, n + 1):
+        preSum[i] = preSum[i - 1] + nums[i - 1]
+
+    
+    # 单调队列维护最小前缀和
+    q = deque()
+    q.append(0)
+    res = float('-inf')
+
+    for i in range(1, n + 1):
+        print(i, preSum)
+        print([preSum[i] for i in q])
+        print(preSum[i], preSum[q[0]])
+        res = max(res, preSum[i] - preSum[q[0]])
+        # 保持队列递增（前缀和小的留着）
+        while q and preSum[q[-1]] >= preSum[i]:
+            q.pop()
+        print(q)
+        q.append(i)
+        print('---------')
+    return res
+
+maxSubArray([-2,1,-3,4,-1,2,1,-5,4],)
