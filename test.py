@@ -408,3 +408,68 @@ def maxSubArray(nums):
     return res
 
 maxSubArray([-2,1,-3,4,-1,2,1,-5,4],)
+
+
+
+
+from copy import deepcopy
+
+def enumerate_trees(parents):
+    n = len(parents)
+    # 1. parents -> children
+    children = [[] for _ in range(n)]
+    for i, p in enumerate(parents):
+        if p != -1:
+            children[p].append(i)
+
+    # 检查是不是二叉树
+    for ch in children:
+        if len(ch) > 2:
+            return []  # 无解
+
+    left =  [-1] * n
+    right = [-1] * n
+    res = []
+
+    def dfs(idx):
+        # 已经处理完所有节点，记录一份方案
+        if idx == n:
+            # 这里可以选择返回 (left, right)，或者 tree = [[l, r]...]
+            res.append((deepcopy(left), deepcopy(right)))
+            return
+
+        kids = children[idx]
+
+        if len(kids) == 0:
+            # 没孩子，固定 -1, -1
+            left[idx] = -1
+            right[idx] = -1
+            dfs(idx + 1)
+
+        elif len(kids) == 1:
+            c = kids[0]
+
+            # 情况1：孩子在左
+            left[idx], right[idx] = c, -1
+            dfs(idx + 1)
+
+            # 情况2：孩子在右
+            left[idx], right[idx] = -1, c
+            dfs(idx + 1)
+
+        elif len(kids) == 2:
+            a, b = kids
+
+            # 情况1：a 左 b 右
+            left[idx], right[idx] = a, b
+            dfs(idx + 1)
+
+            # 情况2：b 左 a 右
+            left[idx], right[idx] = b, a
+            dfs(idx + 1)
+
+    dfs(0)
+    return res
+
+
+enumerate_trees([-1,2,0,2,0])
